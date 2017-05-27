@@ -7,7 +7,7 @@ buildscript {
         }
     }
     dependencies {
-        classpath 'com.android.tools.build:gradle:2.0.0'
+        classpath 'com.android.tools.build:gradle:2.3.2'
         classpath 'com.canelmas.let:let-plugin:0.1.10'
         classpath "com.mendhak.gradlecrowdin:crowdin-plugin:0.0.9"
         classpath 'org.jacoco:org.jacoco.core:0.7.4.201502262128'
@@ -42,11 +42,11 @@ repositories {
 
 android {
     compileSdkVersion 23
-    buildToolsVersion "23.0.2"
+    buildToolsVersion '25.0.0'
 
     defaultConfig {
         applicationId project.APP_ID
-        minSdkVersion 16
+        minSdkVersion 21 //16
         targetSdkVersion 23
 
         versionCode project.APP_VERSION_CODE
@@ -123,7 +123,8 @@ android {
     }
 
     //Copies final APK to this directory
-    assembleRelease.doLast {
+    //assembleRelease.doLast {
+    task renameBuildTask() << {
         def File releaseApk
 
         copy{
@@ -148,6 +149,7 @@ android {
             //Verify with sha256sum -c ~/Downloads/gpslogger-71.apk.SHA256
             ant.checksum(file: releaseApk, algorithm: "SHA256", pattern: "{0} {1}")
         }
+        depends on 'assembleRelease'
     }
 
 }

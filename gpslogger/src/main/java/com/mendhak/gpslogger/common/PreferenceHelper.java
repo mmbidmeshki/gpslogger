@@ -1015,6 +1015,12 @@ public class PreferenceHelper {
         return prefs.getBoolean(PreferenceNames.CUSTOM_FILE_NAME_KEEP_CHANGING, true);
     }
 
+    @ProfilePreference(name= PreferenceNames.LOG_APP_USAGE)
+    public boolean shouldLogAppUsage() {
+        return prefs.getBoolean(PreferenceNames.LOG_APP_USAGE, false);
+    }
+
+
     public void setShouldChangeFileNameDynamically(boolean keepChanging){
         prefs.edit().putBoolean(PreferenceNames.CUSTOM_FILE_NAME_KEEP_CHANGING, keepChanging).apply();
     }

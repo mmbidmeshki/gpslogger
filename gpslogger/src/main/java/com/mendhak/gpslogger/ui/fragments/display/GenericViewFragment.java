@@ -20,6 +20,7 @@
 package com.mendhak.gpslogger.ui.fragments.display;
 
 import android.Manifest;
+import android.app.usage.UsageStatsManager;
 import android.content.Intent;
 import android.os.Bundle;
 import android.provider.Settings;
@@ -40,7 +41,10 @@ import com.mendhak.gpslogger.loggers.Files;
 import com.mendhak.gpslogger.ui.Dialogs;
 import de.greenrobot.event.EventBus;
 import org.slf4j.Logger;
+import android.app.AppOpsManager;
+import android.content.Context;
 
+import java.util.List;
 
 /**
  * Common class for communicating with the parent for the
@@ -100,13 +104,28 @@ public abstract class GenericViewFragment extends PermissionedFragment  {
     }
 
 
-    @AskPermission({Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION, Manifest.permission.WRITE_EXTERNAL_STORAGE})
+    @AskPermission({Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION, Manifest.permission.WRITE_EXTERNAL_STORAGE/*, Manifest.permission.PACKAGE_USAGE_STATS*/})
     public void requestToggleLogging() {
 
         if (session.isStarted()) {
             toggleLogging();
             return;
         }
+
+        // Added by Mahdi
+        if (preferenceHelper.shouldLogAppUsage()) {
+            Context cntx = getActivity().getApplicationContext();
+            UsageStatsManager mUsageStatsManager = (UsageStatsManager) cntx.getSystemService(Context.USAGE_STATS_SERVICE);
+            long time = System.currentTimeMillis();
+            List stats = mUsageStatsManager.queryUsageStats(UsageStatsManager.INTERVAL_DAILY, time - 1000 * 10, time);
+
+            if (stats == null || stats.isEmpty()) {
+                // Usage access is not enabled
+                Intent intent = new Intent(Settings.ACTION_USAGE_ACCESS_SETTINGS);
+                startActivity(intent);
+            }
+        }
+        // End added by Mahdi
 
         if(! Files.isAllowedToWriteTo(preferenceHelper.getGpsLoggerFolder())){
             Dialogs.alert(getString(R.string.error),getString(R.string.pref_logging_file_no_permissions) + "<br />" + preferenceHelper.getGpsLoggerFolder(), getActivity());

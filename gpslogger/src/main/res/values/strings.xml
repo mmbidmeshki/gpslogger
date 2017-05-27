@@ -368,6 +368,11 @@
     <string name="log_nmea_summary">Creates a raw NMEA file while trying to get a fix. This file grows very quickly. Only works while GPS is being used.</string>
     <string name="autoopengts_accountname">Account name</string>
 
+    <!-- Added by Mahdi -->
+    <string name="log_app_usage_title">Log app usage</string>
+    <string name="log_app_usage_summary">Creates a file logging apps used by user.</string>
+    <!-- End added by Mahdi -->
+
     <string name="listeners_gps">GPS</string>
     <string name="listeners_cell">Network</string>
     <string name="listeners_passive">Passive</string>

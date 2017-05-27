@@ -33,6 +33,11 @@ public  class PreferenceNames {
     public static final String LOG_TO_GPX = "log_gpx";
     public static final String LOG_TO_CSV = "log_plain_text";
     public static final String LOG_TO_NMEA = "log_nmea";
+
+    // Added by Mahdi
+    public static final String LOG_APP_USAGE = "log_app_usage";
+    // End added by Mahdi
+
     public static final String LOG_TO_URL = "log_customurl_enabled";
     public static final String LOG_TO_URL_PATH = "log_customurl_url";
     public static final String LOG_TO_OPENGTS = "log_opengts";

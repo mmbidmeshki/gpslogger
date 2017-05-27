@@ -37,6 +37,14 @@
             android:title="@string/log_nmea_title"
             android:summary="@string/log_nmea_summary" />
 
+        <com.mendhak.gpslogger.ui.components.CustomSwitchPreference
+            android:id="@+id/customSwitchPreference"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:key="log_app_usage"
+            android:summary="@string/log_app_usage_summary"
+            android:title="@string/log_app_usage_title" />
+
     <PreferenceCategory
         android:title="@string/pref_filedetails_title"
         >

@@ -19,6 +19,7 @@
 
 package com.mendhak.gpslogger.loggers;
 
+import android.app.usage.UsageEvents;
 import android.content.Context;
 import android.location.Location;
 import com.mendhak.gpslogger.common.PreferenceHelper;
@@ -30,6 +31,7 @@ import com.mendhak.gpslogger.loggers.customurl.CustomUrlLogger;
 import com.mendhak.gpslogger.loggers.gpx.Gpx10FileLogger;
 import com.mendhak.gpslogger.loggers.kml.Kml22FileLogger;
 import com.mendhak.gpslogger.loggers.opengts.OpenGTSLogger;
+import com.mendhak.gpslogger.loggers.usage.AppUsageLogger;
 import com.mendhak.gpslogger.loggers.wear.AndroidWearLogger;
 
 import java.io.File;
@@ -99,4 +101,20 @@ public class FileLoggerFactory {
             logger.annotate(description, loc);
         }
     }
+
+    // Added by Mahdi
+    public static void writeAppUsage(Context context, UsageEvents.Event event) throws Exception{
+
+        File gpxFolder = new File(preferenceHelper.getGpsLoggerFolder());
+        if (!gpxFolder.exists()) {
+            gpxFolder.mkdirs();
+        }
+
+        float batteryLevel = Systems.getBatteryLevel(context);
+        File file = new File(gpxFolder.getPath(), Strings.getFormattedFileName()+ "_usage" + ".csv");
+        AppUsageLogger ulogger = new AppUsageLogger (file, batteryLevel);
+        ulogger.write(event);
+
+    }
+    // End added by Mahdi
 }

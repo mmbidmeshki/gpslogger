@@ -54,6 +54,11 @@ import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
+// Added by Mahdi
+import android.app.usage.UsageEvents;
+import android.app.usage.UsageStatsManager;
+// End added by Mahdi
+
 public class GpsLoggingService extends Service  {
     private static NotificationManager notificationManager;
     private static int NOTIFICATION_ID = 8675309;
@@ -81,6 +86,10 @@ public class GpsLoggingService extends Service  {
     GoogleApiClient googleApiClient;
     // ---------------------------------------------------
 
+    // Added by Mahdi
+    private long lastProcessLogTime;
+    // End Added by Mahdi
+
 
     @Override
     public IBinder onBind(Intent arg0) {
@@ -93,6 +102,11 @@ public class GpsLoggingService extends Service  {
         nextPointAlarmManager = (AlarmManager) getSystemService(ALARM_SERVICE);
 
         registerEventBus();
+
+        // Added by Mahdi
+        lastProcessLogTime = System.currentTimeMillis() - 1;// - 5 * 60 * 1000 - 10;
+        // End Added by Mahdi
+
     }
 
     private void requestActivityRecognitionUpdates() {
@@ -391,7 +405,9 @@ public class GpsLoggingService extends Service  {
         LOG.debug(".");
         session.setAddNewTrackSegment(true);
 
-
+        // Added by Mahdi
+        lastProcessLogTime = System.currentTimeMillis();
+        // End added by Mahdi
 
         try {
             startForeground(NOTIFICATION_ID, new Notification());
@@ -722,6 +738,17 @@ public class GpsLoggingService extends Service  {
         startGpsManager();
     }
 
+    // Added by Mahdi
+    @TargetApi(Build.VERSION_CODES.KITKAT)
+    public static boolean hasUsageStatsPermission(Context context) {
+        AppOpsManager appOps = (AppOpsManager) context.getSystemService(Context.APP_OPS_SERVICE);
+        int mode = appOps.checkOpNoThrow("android:get_usage_stats",
+                android.os.Process.myUid(), context.getPackageName());
+        boolean granted = mode == AppOpsManager.MODE_ALLOWED;
+        return granted;
+    }
+    // End added by Mahdi
+
     /**
      * This event is raised when the GeneralLocationListener has a new location.
      * This method in turn updates notification, writes to file, reobtains
@@ -737,6 +764,39 @@ public class GpsLoggingService extends Service  {
         }
 
         long currentTimeStamp = System.currentTimeMillis();
+
+        // Added by Mahdi
+        if (preferenceHelper.shouldLogAppUsage()) {
+            if (hasUsageStatsPermission(getApplicationContext())) {
+                LOG.info("lastProcessLogTime: " + lastProcessLogTime);
+                long procLogTimeElapsed = currentTimeStamp - lastProcessLogTime;
+                Context cntx = getApplicationContext();
+                if (procLogTimeElapsed >= (1 * 60 * 1000)) {  // log every 5 mins - will fix later to have a preference value for it
+                    String foregroundApp = null;
+
+                    UsageStatsManager mUsageStatsManager = (UsageStatsManager) cntx.getSystemService(Service.USAGE_STATS_SERVICE);
+
+                    UsageEvents usageEvents = mUsageStatsManager.queryEvents(lastProcessLogTime + 1, currentTimeStamp);
+                    UsageEvents.Event event = new UsageEvents.Event();
+                    while (usageEvents.hasNextEvent()) {
+                        usageEvents.getNextEvent(event);
+                        try {
+                            FileLoggerFactory.writeAppUsage(cntx, event);
+                        } catch (Exception e) {
+                            LOG.error("Coud not write app usage", e);
+                        }
+                    }
+                    if (event.getTimeStamp() != 0) {
+                        lastProcessLogTime = event.getTimeStamp();
+                    }
+                }
+            }
+            else {
+                LOG.debug("No usage permission");
+            }
+        }
+        // End added by Mahdi
+
 
         LOG.debug("Has description? " + session.hasDescription() + ", Single point? " + session.isSinglePointMode() + ", Last timestamp: " + session.getLatestTimeStamp());
 
