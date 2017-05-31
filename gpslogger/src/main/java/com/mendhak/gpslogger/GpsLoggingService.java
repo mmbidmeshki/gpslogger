@@ -23,6 +23,7 @@ import android.annotation.TargetApi;
 import android.app.*;
 import android.content.Context;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.graphics.BitmapFactory;
 import android.location.Location;
 import android.location.LocationManager;
@@ -741,12 +742,28 @@ public class GpsLoggingService extends Service  {
     // Added by Mahdi
     @TargetApi(Build.VERSION_CODES.KITKAT)
     public static boolean hasUsageStatsPermission(Context context) {
+        boolean granted = false;
+        AppOpsManager appOps = (AppOpsManager) context
+                .getSystemService(Context.APP_OPS_SERVICE);
+        int mode = appOps.checkOpNoThrow(AppOpsManager.OPSTR_GET_USAGE_STATS,
+                android.os.Process.myUid(), context.getPackageName());
+
+        if (mode == AppOpsManager.MODE_DEFAULT) {
+            granted = (context.checkCallingOrSelfPermission(android.Manifest.permission.PACKAGE_USAGE_STATS) == PackageManager.PERMISSION_GRANTED);
+        } else {
+            granted = (mode == AppOpsManager.MODE_ALLOWED);
+        }
+        return granted;
+        /*
         AppOpsManager appOps = (AppOpsManager) context.getSystemService(Context.APP_OPS_SERVICE);
         int mode = appOps.checkOpNoThrow("android:get_usage_stats",
                 android.os.Process.myUid(), context.getPackageName());
         boolean granted = mode == AppOpsManager.MODE_ALLOWED;
         return granted;
+        */
     }
+
+
     // End added by Mahdi
 
     /**

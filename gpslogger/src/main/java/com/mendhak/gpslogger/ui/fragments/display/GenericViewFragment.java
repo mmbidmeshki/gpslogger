@@ -22,6 +22,7 @@ package com.mendhak.gpslogger.ui.fragments.display;
 import android.Manifest;
 import android.app.usage.UsageStatsManager;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.provider.Settings;
 import android.support.annotation.NonNull;
@@ -114,6 +115,25 @@ public abstract class GenericViewFragment extends PermissionedFragment  {
 
         // Added by Mahdi
         if (preferenceHelper.shouldLogAppUsage()) {
+
+            boolean granted = false;
+            Context context = getActivity().getApplicationContext();
+            AppOpsManager appOps = (AppOpsManager) context
+                    .getSystemService(Context.APP_OPS_SERVICE);
+            int mode = appOps.checkOpNoThrow(AppOpsManager.OPSTR_GET_USAGE_STATS,
+                    android.os.Process.myUid(), context.getPackageName());
+
+            if (mode == AppOpsManager.MODE_DEFAULT) {
+                granted = (context.checkCallingOrSelfPermission(android.Manifest.permission.PACKAGE_USAGE_STATS) == PackageManager.PERMISSION_GRANTED);
+            } else {
+                granted = (mode == AppOpsManager.MODE_ALLOWED);
+            }
+            if (!granted) {
+                // Usage access is not enabled
+                Intent intent = new Intent(Settings.ACTION_USAGE_ACCESS_SETTINGS);
+                startActivity(intent);
+            }
+            /*
             Context cntx = getActivity().getApplicationContext();
             UsageStatsManager mUsageStatsManager = (UsageStatsManager) cntx.getSystemService(Context.USAGE_STATS_SERVICE);
             long time = System.currentTimeMillis();
@@ -124,6 +144,7 @@ public abstract class GenericViewFragment extends PermissionedFragment  {
                 Intent intent = new Intent(Settings.ACTION_USAGE_ACCESS_SETTINGS);
                 startActivity(intent);
             }
+            */
         }
         // End added by Mahdi
 
